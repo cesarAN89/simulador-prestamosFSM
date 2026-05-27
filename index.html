@@ -1,118 +1,720 @@
-sigo esperando
-
-¡Tienes razón, aquí va el código completo! 👇
-
----
-
-## 📄 Archivo `index.html`
-
-```html
 <!DOCTYPE html>
 <html lang="es">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Simulador de Préstamos FSM</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Simulador de Préstamos</title>
+
+  <!-- jsPDF -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <!-- jsPDF AutoTable -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
+
   <style>
-    * { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --primary: #1A7F5A;
+      --secondary: #1A3C5A;
+      --action: #1E293B;
+      --white: #FFFFFF;
+      --bg: #F8FAFC;
+      --text: #1E293B;
+      --border: #D8E2EA;
+      --shadow: 0 10px 25px rgba(26, 60, 90, 0.08);
+      --radius: 18px;
+      --radius-pill: 30px;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
 
     body {
-      font-family: 'Segoe UI', sans-serif;
-      background: #F8FAFC;
-      color: #1E293B;
-    }
-
-    header {
-      background: linear-gradient(135deg, #1A3C5A, #1A7F5A);
-      color: white;
-      padding: 24px 40px;
-      text-align: center;
-    }
-
-    header h1 { font-size: 1.8rem; font-weight: 700; }
-    header p  { font-size: 0.95rem; opacity: 0.85; margin-top: 4px; }
-
-    .tabs {
-      display: flex;
-      justify-content: center;
-      gap: 8px;
-      padding: 24px 20px 0;
-      flex-wrap: wrap;
-    }
-
-    .tab-btn {
-      padding: 10px 24px;
-      border: 2px solid #1A7F5A;
-      background: white;
-      color: #1A7F5A;
-      border-radius: 30px;
-      cursor: pointer;
-      font-weight: 600;
-      font-size: 0.9rem;
-      transition: all 0.2s;
-    }
-
-    .tab-btn:hover { background: #e6f4ef; }
-
-    .tab-btn.active {
-      background: #1A7F5A;
-      color: white;
+      margin: 0;
+      font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+      background: var(--bg);
+      color: var(--text);
     }
 
     .container {
-      max-width: 800px;
-      margin: 30px auto;
-      padding: 0 20px;
+      width: min(1100px, 92%);
+      margin: 0 auto;
+    }
+
+    header {
+      background: linear-gradient(135deg, var(--secondary), var(--primary));
+      color: var(--white);
+      padding: 42px 20px 36px;
+      box-shadow: var(--shadow);
+    }
+
+    header .container {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .title {
+      margin: 0;
+      font-size: clamp(2rem, 4vw, 3rem);
+      font-weight: 700;
+      letter-spacing: 0.3px;
+    }
+
+    .subtitle {
+      margin: 0;
+      font-size: 1.05rem;
+      opacity: 0.95;
+    }
+
+    main {
+      padding: 28px 0 48px;
     }
 
     .card {
-      background: white;
-      border-radius: 16px;
-      box-shadow: 0 4px 24px rgba(0,0,0,0.08);
-      padding: 32px;
+      background: #fff;
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 24px;
     }
 
-    .card h2 {
-      font-size: 1.2rem;
-      color: #1A3C5A;
+    .tabs {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
       margin-bottom: 24px;
-      border-left: 4px solid #1A7F5A;
-      padding-left: 12px;
+      justify-content: center;
     }
 
-    .form-group {
+    .tab-btn {
+      border: none;
+      background: #E8EEF4;
+      color: var(--text);
+      padding: 12px 20px;
+      border-radius: var(--radius-pill);
+      cursor: pointer;
+      font-size: 0.95rem;
+      font-weight: 600;
+      transition: all 0.25s ease;
+      min-width: 130px;
+    }
+
+    .tab-btn:hover {
+      transform: translateY(-1px);
+      background: #DDE8EF;
+    }
+
+    .tab-btn.active {
+      background: var(--primary);
+      color: var(--white);
+      box-shadow: 0 8px 18px rgba(26, 127, 90, 0.24);
+    }
+
+    .panel {
+      display: none;
+      animation: fadeIn 0.25s ease;
+    }
+
+    .panel.active {
+      display: block;
+    }
+
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(6px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .loan-header {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      gap: 14px;
+      align-items: center;
       margin-bottom: 20px;
+      padding-bottom: 14px;
+      border-bottom: 1px solid #EEF3F7;
+    }
+
+    .loan-title {
+      margin: 0;
+      font-size: 1.45rem;
+      color: var(--secondary);
+    }
+
+    .loan-meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .pill {
+      background: #EEF7F3;
+      color: var(--primary);
+      border: 1px solid #D2EDE2;
+      padding: 8px 14px;
+      border-radius: 999px;
+      font-size: 0.9rem;
+      font-weight: 600;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 18px;
+      margin-bottom: 18px;
+    }
+
+    .field {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .field.full {
+      grid-column: 1 / -1;
     }
 
     label {
-      display: block;
-      font-size: 0.85rem;
       font-weight: 600;
-      color: #1A3C5A;
-      margin-bottom: 6px;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
+      font-size: 0.95rem;
     }
 
-    input[type="number"] {
+    input {
       width: 100%;
-      padding: 12px 16px;
-      border: 1.5px solid #CBD5E1;
-      border-radius: 10px;
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 14px 16px;
       font-size: 1rem;
-      color: #1E293B;
-      background: #F8FAFC;
-      transition: border 0.2s;
-    }
-
-    input[type="number"]:focus {
       outline: none;
-      border-color: #1A7F5A;
-      background: white;
+      background: #fff;
+      transition: border-color 0.2s ease, box-shadow 0.2s ease;
+      color: var(--text);
     }
 
-    .info-box {
-      background: #EFF6FF;
-      border: 1px solid #
+    input:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 4px rgba(26, 127, 90, 0.12);
+    }
+
+    .readonly-box {
+      width: 100%;
+      border: 1px solid #D6E6DE;
+      border-radius: 14px;
+      padding: 14px 16px;
+      font-size: 1rem;
+      background: #F4FBF8;
+      color: var(--primary);
+      font-weight: 700;
+      min-height: 50px;
+      display: flex;
+      align-items: center;
+    }
+
+    .actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-top: 10px;
+      margin-bottom: 18px;
+    }
+
+    button.action-btn {
+      background: var(--action);
+      color: var(--white);
+      border: none;
+      border-radius: 14px;
+      padding: 13px 18px;
+      font-size: 0.96rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: transform 0.2s ease, opacity 0.2s ease, box-shadow 0.2s ease;
+      box-shadow: 0 8px 18px rgba(30, 41, 59, 0.14);
+    }
+
+    button.action-btn:hover {
+      transform: translateY(-1px);
+      opacity: 0.96;
+    }
+
+    button.action-btn.secondary {
+      background: var(--primary);
+      box-shadow: 0 8px 18px rgba(26, 127, 90, 0.18);
+    }
+
+    .summary {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 14px;
+      margin: 18px 0 22px;
+    }
+
+    .summary-item {
+      background: #F9FBFD;
+      border: 1px solid #E8EEF4;
+      border-radius: 16px;
+      padding: 16px;
+    }
+
+    .summary-label {
+      font-size: 0.86rem;
+      color: #5B6B7B;
+      margin-bottom: 6px;
+    }
+
+    .summary-value {
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: var(--secondary);
+    }
+
+    .table-wrap {
+      overflow-x: auto;
+      border: 1px solid #E8EEF4;
+      border-radius: 16px;
+      background: #fff;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      min-width: 560px;
+    }
+
+    thead {
+      background: var(--secondary);
+      color: var(--white);
+    }
+
+    th, td {
+      padding: 14px 16px;
+      text-align: left;
+      border-bottom: 1px solid #EDF2F7;
+      font-size: 0.95rem;
+    }
+
+    tbody tr:nth-child(even) {
+      background: #FAFCFE;
+    }
+
+    tbody tr:hover {
+      background: #F2F8FB;
+    }
+
+    .notice {
+      margin-top: 20px;
+      background: #F6FBF8;
+      border: 1px solid #D6EDE2;
+      color: var(--text);
+      border-radius: 16px;
+      padding: 16px 18px;
+      line-height: 1.5;
+    }
+
+    .error-box {
+      display: none;
+      margin-bottom: 16px;
+      background: #FFF3F3;
+      color: #B42318;
+      border: 1px solid #F5C2C7;
+      border-radius: 14px;
+      padding: 14px 16px;
+      font-weight: 600;
+    }
+
+    .footnote {
+      margin-top: 24px;
+      text-align: center;
+      color: #617182;
+      font-size: 0.9rem;
+    }
+
+    @media (max-width: 900px) {
+      .grid,
+      .summary {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 640px) {
+      header {
+        padding: 34px 16px 30px;
+      }
+
+      .card {
+        padding: 18px;
+      }
+
+      .tab-btn {
+        width: 100%;
+      }
+
+      .loan-header {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+
+      .actions {
+        flex-direction: column;
+      }
+
+      button.action-btn {
+        width: 100%;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="container">
+      <h1 class="title">Simulador de Préstamos</h1>
+      <p class="subtitle">Beneficio para empleados — FSM</p>
+    </div>
+  </header>
+
+  <main>
+    <div class="container">
+      <section class="card">
+        <div class="tabs" id="tabs"></div>
+        <div id="panels"></div>
+        <p class="footnote">Simule su préstamo de forma rápida, clara y profesional.</p>
+      </section>
+    </div>
+  </main>
+
+  <script>
+    const loanTypes = {
+      ordinario: {
+        name: "Ordinario",
+        cuotas: 3,
+        interest: 0,
+        multiplier: 0.5
+      },
+      vehiculo: {
+        name: "Vehículo",
+        cuotas: 8,
+        interest: 0,
+        multiplier: 1.5
+      },
+      educacion: {
+        name: "Educación",
+        cuotas: 6,
+        interest: 0,
+        multiplier: 1
+      },
+      vivienda: {
+        name: "Vivienda",
+        cuotas: 12,
+        interest: 0,
+        multiplier: 2
+      }
+    };
+
+    const tabsContainer = document.getElementById("tabs");
+    const panelsContainer = document.getElementById("panels");
+
+    function formatCurrency(value) {
+      return new Intl.NumberFormat("es-CO", {
+        style: "currency",
+        currency: "COP",
+        maximumFractionDigits: 2
+      }).format(Number(value) || 0);
+    }
+
+    function createInterface() {
+      Object.keys(loanTypes).forEach((key, index) => {
+        const loan = loanTypes[key];
+
+        const tab = document.createElement("button");
+        tab.className = `tab-btn ${index === 0 ? "active" : ""}`;
+        tab.textContent = loan.name;
+        tab.dataset.target = key;
+        tab.addEventListener("click", () => activateTab(key));
+        tabsContainer.appendChild(tab);
+
+        const panel = document.createElement("div");
+        panel.className = `panel ${index === 0 ? "active" : ""}`;
+        panel.id = key;
+        panel.innerHTML = `
+          <div class="loan-header">
+            <div>
+              <h2 class="loan-title">Crédito ${loan.name}</h2>
+            </div>
+            <div class="loan-meta">
+              <span class="pill">${loan.cuotas} cuotas fijas</span>
+              <span class="pill">Interés 0%</span>
+              <span class="pill">Tope: ${loan.multiplier} × salario</span>
+            </div>
+          </div>
+
+          <div class="error-box" id="error-${key}"></div>
+
+          <div class="grid">
+            <div class="field">
+              <label for="salary-${key}">Salario vigente</label>
+              <input type="number" id="salary-${key}" min="0" step="0.01" placeholder="Ingrese su salario" />
+            </div>
+
+            <div class="field">
+              <label>Monto máximo permitido</label>
+              <div class="readonly-box" id="max-${key}">${formatCurrency(0)}</div>
+            </div>
+
+            <div class="field">
+              <label for="amount-${key}">Monto a solicitar</label>
+              <input type="number" id="amount-${key}" min="0" step="0.01" placeholder="Ingrese el monto solicitado" />
+            </div>
+
+            <div class="field">
+              <label>Número de cuotas</label>
+              <div class="readonly-box">${loan.cuotas}</div>
+            </div>
+          </div>
+
+          <div class="actions">
+            <button class="action-btn secondary" onclick="simulateLoan('${key}')">Simular préstamo</button>
+            <button class="action-btn" onclick="downloadPDF('${key}')">Descargar PDF</button>
+          </div>
+
+          <div class="summary" id="summary-${key}" style="display:none;">
+            <div class="summary-item">
+              <div class="summary-label">Tipo de crédito</div>
+              <div class="summary-value">${loan.name}</div>
+            </div>
+            <div class="summary-item">
+              <div class="summary-label">Monto solicitado</div>
+              <div class="summary-value" id="summary-amount-${key}">${formatCurrency(0)}</div>
+            </div>
+            <div class="summary-item">
+              <div class="summary-label">Valor de cada cuota</div>
+              <div class="summary-value" id="summary-installment-${key}">${formatCurrency(0)}</div>
+            </div>
+          </div>
+
+          <div class="table-wrap">
+            <table id="table-${key}">
+              <thead>
+                <tr>
+                  <th>N° cuota</th>
+                  <th>Valor cuota</th>
+                  <th>Saldo restante</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td colspan="3">Aún no se ha generado una simulación.</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div class="notice">
+            <strong>Aviso informativo:</strong><br>
+            Este documento es informativo. Para radicar su solicitud,
+            preséntelo ante el área de Recursos Humanos.
+          </div>
+        `;
+
+        panelsContainer.appendChild(panel);
+
+        const salaryInput = document.getElementById(`salary-${key}`);
+        salaryInput.addEventListener("input", () => updateMaxAmount(key));
+      });
+    }
+
+    function activateTab(key) {
+      document.querySelectorAll(".tab-btn").forEach(btn => {
+        btn.classList.toggle("active", btn.dataset.target === key);
+      });
+
+      document.querySelectorAll(".panel").forEach(panel => {
+        panel.classList.toggle("active", panel.id === key);
+      });
+    }
+
+    function updateMaxAmount(key) {
+      const loan = loanTypes[key];
+      const salary = parseFloat(document.getElementById(`salary-${key}`).value) || 0;
+      const maxAmount = salary * loan.multiplier;
+      document.getElementById(`max-${key}`).textContent = formatCurrency(maxAmount);
+    }
+
+    function showError(key, message) {
+      const errorBox = document.getElementById(`error-${key}`);
+      errorBox.textContent = message;
+      errorBox.style.display = "block";
+    }
+
+    function hideError(key) {
+      const errorBox = document.getElementById(`error-${key}`);
+      errorBox.textContent = "";
+      errorBox.style.display = "none";
+    }
+
+    function buildAmortizationSchedule(amount, cuotas) {
+      const installment = amount / cuotas;
+      let balance = amount;
+      const rows = [];
+
+      for (let i = 1; i <= cuotas; i++) {
+        balance -= installment;
+        if (balance < 0.01) balance = 0;
+
+        rows.push({
+          cuota: i,
+          valorCuota: installment,
+          saldoRestante: balance
+        });
+      }
+
+      return {
+        installment,
+        rows
+      };
+    }
+
+    function simulateLoan(key) {
+      hideError(key);
+
+      const loan = loanTypes[key];
+      const salary = parseFloat(document.getElementById(`salary-${key}`).value);
+      const amount = parseFloat(document.getElementById(`amount-${key}`).value);
+
+      if (isNaN(salary) || salary <= 0) {
+        showError(key, "Por favor, ingrese un salario vigente válido.");
+        return;
+      }
+
+      const maxAmount = salary * loan.multiplier;
+      document.getElementById(`max-${key}`).textContent = formatCurrency(maxAmount);
+
+      if (isNaN(amount) || amount <= 0) {
+        showError(key, "Por favor, ingrese un monto solicitado válido.");
+        return;
+      }
+
+      if (amount > maxAmount) {
+        showError(
+          key,
+          `El monto solicitado supera el máximo permitido para este tipo de crédito (${formatCurrency(maxAmount)}).`
+        );
+        alert("Error: el monto solicitado supera el máximo permitido.");
+        return;
+      }
+
+      const result = buildAmortizationSchedule(amount, loan.cuotas);
+      renderTable(key, result.rows);
+
+      document.getElementById(`summary-${key}`).style.display = "grid";
+      document.getElementById(`summary-amount-${key}`).textContent = formatCurrency(amount);
+      document.getElementById(`summary-installment-${key}`).textContent = formatCurrency(result.installment);
+
+      window.lastSimulation = window.lastSimulation || {};
+      window.lastSimulation[key] = {
+        loanName: loan.name,
+        salary,
+        amount,
+        cuotas: loan.cuotas,
+        installment: result.installment,
+        rows: result.rows
+      };
+    }
+
+    function renderTable(key, rows) {
+      const tbody = document.querySelector(`#table-${key} tbody`);
+      tbody.innerHTML = "";
+
+      rows.forEach(row => {
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+          <td>${row.cuota}</td>
+          <td>${formatCurrency(row.valorCuota)}</td>
+          <td>${formatCurrency(row.saldoRestante)}</td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    function downloadPDF(key) {
+      const simulation = window.lastSimulation && window.lastSimulation[key];
+
+      if (!simulation) {
+        alert("Primero debe realizar la simulación antes de descargar el PDF.");
+        return;
+      }
+
+      const { jsPDF } = window.jspdf;
+      const doc = new jsPDF();
+
+      doc.setFillColor(26, 60, 90);
+      doc.rect(0, 0, 210, 28, "F");
+
+      doc.setTextColor(255, 255, 255);
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(18);
+      doc.text("Simulador de Préstamos", 14, 16);
+
+      doc.setFontSize(10);
+      doc.setFont("helvetica", "normal");
+      doc.text("Beneficio para empleados — FSM", 14, 23);
+
+      doc.setTextColor(30, 41, 59);
+      doc.setFontSize(13);
+      doc.setFont("helvetica", "bold");
+      doc.text("Resumen de simulación", 14, 40);
+
+      doc.setFontSize(11);
+      doc.setFont("helvetica", "normal");
+      doc.text(`Tipo de crédito: ${simulation.loanName}`, 14, 50);
+      doc.text(`Salario ingresado: ${formatCurrency(simulation.salary)}`, 14, 58);
+      doc.text(`Monto solicitado: ${formatCurrency(simulation.amount)}`, 14, 66);
+      doc.text(`Número de cuotas: ${simulation.cuotas}`, 14, 74);
+      doc.text(`Valor de cuota: ${formatCurrency(simulation.installment)}`, 14, 82);
+
+      const body = simulation.rows.map(item => [
+        item.cuota,
+        formatCurrency(item.valorCuota),
+        formatCurrency(item.saldoRestante)
+      ]);
+
+      doc.autoTable({
+        startY: 92,
+        head: [["N° cuota", "Valor cuota", "Saldo restante"]],
+        body,
+        theme: "grid",
+        headStyles: {
+          fillColor: [26, 127, 90],
+          textColor: [255, 255, 255]
+        },
+        styles: {
+          font: "helvetica",
+          fontSize: 10,
+          textColor: [30, 41, 59]
+        },
+        alternateRowStyles: {
+          fillColor: [248, 250, 252]
+        }
+      });
+
+      const finalY = doc.lastAutoTable.finalY || 110;
+      doc.setFontSize(10);
+      doc.setTextColor(80, 90, 100);
+      doc.text(
+        "Este documento es informativo. Para radicar su solicitud, preséntelo ante el área de Recursos Humanos.",
+        14,
+        finalY + 12,
+        { maxWidth: 180 }
+      );
+
+      const fileName = `simulacion_${simulation.loanName.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "")}.pdf`;
+      doc.save(fileName);
+    }
+
+    createInterface();
+  </script>
+</body>
+</html>
